@@ -360,25 +360,27 @@
 
         @media (max-width: 800px) {
             body {
-                overflow-y: auto;
-                /* Allow scroll on small vertical */
-                display: block;
-                /* Remove center flex to allow scroll */
-                height: auto;
-                min-height: 100vh;
+                overflow: hidden;
+                /* FORCE FIXED SCREEN */
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
             }
 
             .grid-canvas {
                 position: fixed;
             }
 
-            /* Keep bg fixed */
-
             .hud-frame {
                 position: fixed;
-                /* Keep HUD fixed or relative? Fixed is requested style usually */
                 inset: 10px;
                 pointer-events: none;
+                z-index: 20;
+                /* Ensure UI stays above scrolling content */
             }
 
             .hud-header,
@@ -386,38 +388,68 @@
                 pointer-events: auto;
             }
 
+            /* Horizontal Snap Carousel for Modules */
             .modules-hub {
                 display: flex;
-                flex-direction: column;
-                align-items: center;
-                padding-top: 140px;
-                /* Space for header */
-                padding-bottom: 120px;
-                /* Space for footer */
+                flex-direction: row;
+                /* Horizontal flow */
+                overflow-x: auto;
+                /* Allow horizontal scroll */
+                overflow-y: hidden;
+                scroll-snap-type: x mandatory;
                 width: 100%;
+                height: 100%;
+                align-items: center;
+                /* Center cards vertically */
+
+                /* Center snapping logic */
+                padding: 0 calc(50% - 42.5vw);
+                gap: 20px;
+
+                /* Hide scrollbar */
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .modules-hub::-webkit-scrollbar {
+                display: none;
             }
 
             .module-card {
-                width: 90%;
-                max-width: 350px;
-                height: 400px;
+                flex: 0 0 auto;
+                width: 85vw;
+                /* Card width relative to viewport */
+                height: 55vh;
+                /* Responsive height to fit between header/footer */
+                min-height: 400px;
+                scroll-snap-align: center;
+                margin: 0;
+                transform: scale(0.95);
+            }
+
+            /* Reset hover effects on touch to prevent weird jumps */
+            .module-card:hover {
+                transform: scale(0.95);
+                box-shadow: var(--brutal-shadow);
             }
 
             .hud-footer {
                 flex-direction: column-reverse;
-                /* Stack tray under right elements */
                 align-items: flex-start;
-                gap: 20px;
+                gap: 10px;
             }
 
             .right-tray-group {
                 align-self: flex-end;
-                /* Keep alerts on right */
                 text-align: right;
             }
 
             .main-title {
-                font-size: 3rem;
+                font-size: 2.5rem;
+            }
+
+            .school-tag {
+                font-size: 8px;
             }
         }
     </style>
@@ -452,7 +484,7 @@
     <div class="hud-frame">
         <div class="hud-header">
             <div>
-                <div class="school-tag">BHUMISPARSHA SCHOOL // 2027_VER</div>
+                <div class="school-tag">BHUMISPARSHA SCHOOL // 2026_VER</div>
                 <h1 class="main-title">DHARMA<br>PLAY</h1>
             </div>
             <div style="text-align: right; font-family: 'JetBrains Mono'; font-size: 10px;">
@@ -466,7 +498,8 @@
             <div class="terminal-tray">
                 <span>> INITIALIZING SUDHANA_NO_SEKAI</span>
                 <span>> SEEDING HOUSAKY_AGI WITH COMPASSION... OK</span>
-                <span>> RENDERING TECHNO_SUTRA_AR_VR... 99.9%</span>
+                <span>> RENDERING AGI..... NOT READY | YET |</span>
+                |
             </div>
 
             <div class="right-tray-group">
@@ -479,28 +512,11 @@
     </div>
 
     <main class="modules-hub">
-        <!-- MODULE 1: STEM 'A' PLAY -->
-        <article class="module-card">
-            <div class="module-content">
-                <div class="module-tag">SUBMODULE // 01</div>
-                <h2 class="module-name">STEM 'A'<br>PLAY</h2>
-                <p class="module-desc">Cyberpunk-buddhist Visual Novel (VN) based on the Avatamsaka Sutra (STEM ARRAY).
-                </p>
-                <div class="module-status">
-                    <span>AGI CONNECTION: DECISION BRANCHING</span>
-                    <span>ENGINE: REN'PY + RUST (Bevy VR + AR)</span>
-                    <span>PLATFORM: WINDOWS / MAC_OS / LINUX / iOS / ANDROID</span>
-                </div>
-            </div>
-            <div class="anime-decor">物語</div>
-            <button class="btn-action">PLAY HISTORY <span>→</span></button>
-        </article>
-
-        <!-- MODULE 2: CYBERMANJU -->
+        <!-- MODULE 1: CYBERMANJU -->
         <article class="module-card"
             style="border-color: var(--hologram-pink); box-shadow: 6px 6px 0px var(--hologram-pink);">
             <div class="module-content">
-                <div class="module-tag" style="color: var(--hologram-pink);">SUBMODULE // 02</div>
+                <div class="module-tag" style="color: var(--hologram-pink);">SUBMODULE // 01</div>
                 <h2 class="module-name">CYBER<br>MANJU</h2>
                 <p class="module-desc">Decentralized AI researching AGI for the benefit of all sentient beings.
                     Artistic consciousness integrated into the dharmic.</p>
@@ -515,11 +531,11 @@
                 <span>→</span></button>
         </article>
 
-        <!-- MODULE 3: TECHNO SUTRA -->
+        <!-- MODULE 2: TECHNO SUTRA -->
         <article class="module-card"
             style="border-color: var(--cyber-blue); box-shadow: 6px 6px 0px var(--cyber-blue);">
             <div class="module-content">
-                <div class="module-tag" style="color: var(--cyber-blue);">SUBMODULE // 03</div>
+                <div class="module-tag" style="color: var(--cyber-blue);">SUBMODULE // 02</div>
                 <h2 class="module-name">TECHNO<br>SUTRA</h2>
                 <p class="module-desc">AR and VR interface for 3D environments.
                     Translation of the STEM Array into Portuguese.
@@ -531,8 +547,25 @@
                 </div>
             </div>
             <div class="anime-decor" style="color: var(--cyber-blue);">経典</div>
-            <button class="btn-action" style="border-color: var(--cyber-blue);">DEPLOY AUGMENTATION REALITY
+            <button class="btn-action" style="border-color: var(--cyber-blue);">ENTER AUGMENTATION REALITY
                 <span>→</span></button>
+        </article>
+
+        <!-- MODULE 3: STEM 'A' PLAY -->
+        <article class="module-card">
+            <div class="module-content">
+                <div class="module-tag">SUBMODULE // 03</div>
+                <h2 class="module-name">STEM 'A'<br>PLAY</h2>
+                <p class="module-desc">Cyberpunk-buddhist Visual Novel (VN) based on the Avatamsaka Sutra (STEM ARRAY).
+                </p>
+                <div class="module-status">
+                    <span>AGI CONNECTION: DECISION BRANCHING</span>
+                    <span>ENGINE: REN'PY + RUST (Bevy VR + AR)</span>
+                    <span>PLATFORM: WINDOWS / MAC_OS / LINUX / iOS / ANDROID</span>
+                </div>
+            </div>
+            <div class="anime-decor">物語</div>
+            <button class="btn-action">PLAY HISTORY <span>→</span></button>
         </article>
     </main>
 
