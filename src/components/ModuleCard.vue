@@ -10,6 +10,7 @@
     @mouseleave="handleMouseLeave"
     @mousedown="handleMouseDown"
     @mouseup="handleMouseUp"
+    @click.prevent="handleClick"
   >
     <div class="module-content">
       <div class="module-tag" :style="tagStyle">
@@ -74,13 +75,20 @@ const props = defineProps({
   href: {
     type: String,
     default: null
+  },
+  playVideo: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['click'])
 
 const isHovered = ref(false)
 const isPressed = ref(false)
 
 const linkComponent = computed(() => {
+  if (props.playVideo) return 'article'
   if (props.href) return 'a'
   if (props.to) return 'router-link'
   return 'article'
@@ -141,6 +149,14 @@ const handleMouseDown = () => {
 
 const handleMouseUp = () => {
   isPressed.value = false
+}
+
+const handleClick = (e) => {
+  if (props.playVideo) {
+    emit('click', e)
+  } else if (props.href) {
+    window.open(props.href, '_blank')
+  }
 }
 </script>
 

@@ -85,8 +85,42 @@
         :key="index"
         v-bind="module"
         :rotation="cardRotation"
+        @click="handleCardClick(module)"
       />
     </main>
+
+    <!-- Fullscreen Video Player -->
+    <div v-if="showVideoPlayer" class="video-player-overlay" @click.self="closeVideoPlayer">
+      <div class="video-player-container">
+        <video 
+          ref="videoPlayer"
+          class="fullscreen-video"
+          :src="videoSrc"
+          autoplay
+          playsinline
+          @ended="onVideoEnded"
+          @click="toggleFullscreen"
+        ></video>
+        <div class="video-controls">
+          <span class="close-btn" @click="closeVideoPlayer">[ X ] CLOSE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Development Notice Modal -->
+    <div v-if="showDevNotice" class="dev-notice-overlay" @click="closeDevNotice">
+      <div class="dev-notice-modal">
+        <div class="dev-notice-header">
+          <span class="dev-notice-icon">⚠</span>
+          <span class="dev-notice-title">SYSTEM NOTICE</span>
+        </div>
+        <div class="dev-notice-content">
+          <p class="dev-notice-text">STEM 'A' PLAY IS STILL IN DEVELOPMENT</p>
+          <p class="dev-notice-subtext">Building consciousness infrastructure...</p>
+        </div>
+        <button class="dev-notice-btn" @click="closeDevNotice">[ ACKNOWLEDGE ]</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -94,28 +128,26 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ModuleCard from '../components/ModuleCard.vue'
 
-// Terminal lines
 const terminalLines = [
   'INITIALIZING SUDHANA_NO_SEKAI',
   'SEEDING HOUSAKY_AGI WITH COMPASSION... OK',
   'RENDERING TECHNO_SUTRA_AR_VR... 99.9%'
 ]
 
-// Module data
 const modules = [
   {
     tag: 'SUBMODULE // 01',
-    name: "STEM 'A'\nPLAY",
-    description: "Cyberpunk-buddhist Visual Novel (VN) based on the Avatamsaka Sutra (STEM ARRAY).",
+    name: "TECHNO\nSUTRA",
+    description: 'AR and VR interface for 3D environments. Translation of the STEM Array into Portuguese. The word of the Buddha, virtually augmented.',
     statuses: [
-      'AGI CONNECTION: DECISION BRANCHING',
-      'ENGINE: REN\'PY + RUST (Bevy VR + AR)',
-      'PLATFORM: WINDOWS / MAC_OS / LINUX / iOS / ANDROID'
+      'LOCALE: INTERNATIONAL LAYER',
+      'AR_DEVICE: ACTIVE',
+      'VR_DEVICE: FUND.RAISING'
     ],
-    decor: '物語',
-    buttonText: 'PLAY HISTORY',
-    accentColor: null,
-    to: '/stemaplay'
+    decor: '経典',
+    buttonText: 'DEPLOY AR',
+    accentColor: '#00d4ff',
+    href: 'https://technosutra.bhumisparshaschool.org'
   },
   {
     tag: 'SUBMODULE // 02',
@@ -130,39 +162,80 @@ const modules = [
     decor: '知恵',
     buttonText: 'SAY HELLO',
     accentColor: '#ff00ff',
-    href: 'https://bhumisparshaschool.org'
+    href: 'https://bhumisparshaschool.org/cybermanju'
   },
   {
     tag: 'SUBMODULE // 03',
-    name: 'TECHNO\nSUTRA',
-    description: 'AR and VR interface for 3D environments. Translation of the STEM Array into Portuguese. The word of the Buddha, virtually augmented.',
+    name: "STEM 'A'\nPLAY",
+    description: "Cyberpunk-buddhist Visual Novel (VN) based on the Avatamsaka Sutra (STEM ARRAY).",
     statuses: [
-      'LOCALE: INTERNATIONAL LAYERr',
-      'AR_DEVICE: ACTIVE',
-      'VR_DEVICE: FUND.RAISING'
+      'AGI CONNECTION: DECISION BRANCHING',
+      'ENGINE: REN\'PY + RUST (Bevy VR + AR)',
+      'PLATFORM: WINDOWS / MAC_OS / LINUX / iOS / ANDROID'
     ],
-    decor: '経典',
-    buttonText: 'DEPLOY AUGMENTATION REALITY',
-    accentColor: '#00d4ff',
-    href: 'https://technosutra.bhumisparshaschool.org'
+    decor: '物語',
+    buttonText: 'PLAY INTRO',
+    accentColor: null,
+    playVideo: true
   }
 ]
 
-// Mouse parallax state
+const videoPlayer = ref(null)
+const showVideoPlayer = ref(false)
+const showDevNotice = ref(false)
+
+const videoSrc = computed(() => {
+  const base = import.meta.env.BASE_URL || '/'
+  return `${base}INTRO.mp4`
+})
+
+const handleCardClick = (module) => {
+  if (module.playVideo) {
+    showVideoPlayer.value = true
+  }
+}
+
+const closeVideoPlayer = () => {
+  showVideoPlayer.value = false
+  if (videoPlayer.value) {
+    videoPlayer.value.pause()
+  }
+}
+
+const toggleFullscreen = () => {
+  if (videoPlayer.value) {
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+    } else {
+      videoPlayer.value.requestFullscreen()
+    }
+  }
+}
+
+const onVideoEnded = () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen()
+  }
+  showVideoPlayer.value = false
+  showDevNotice.value = true
+}
+
+const closeDevNotice = () => {
+  showDevNotice.value = false
+}
+
 const mouseX = ref(0)
 const mouseY = ref(0)
 const currentX = ref(0)
 const currentY = ref(0)
 const hue = ref(0)
 
-// Grid animation
 const gridStyle = computed(() => {
   return {
     filter: `url(#liquid-distort) hue-rotate(${hue.value}deg)`
   }
 })
 
-// Card rotation based on mouse position
 const cardRotation = computed(() => {
   return {
     x: currentX.value,
@@ -170,25 +243,21 @@ const cardRotation = computed(() => {
   }
 })
 
-// Animation frame IDs
 let parallaxRafId = null
 let pulseRafId = null
 let lastPulseTime = 0
 
-// Mouse move handler
 const handleMouseMove = (e) => {
   mouseX.value = (window.innerWidth / 2 - e.pageX) / 50
   mouseY.value = (window.innerHeight / 2 - e.pageY) / 50
 }
 
-// Parallax animation loop
 const updateParallax = () => {
   currentX.value += (mouseX.value - currentX.value) * 0.1
   currentY.value += (mouseY.value - currentY.value) * 0.1
   parallaxRafId = requestAnimationFrame(updateParallax)
 }
 
-// Pulse animation loop (limited to ~20fps for performance)
 const pulse = (timestamp) => {
   if (timestamp - lastPulseTime >= 50) {
     hue.value = (hue.value + 1) % 360
@@ -478,5 +547,129 @@ onUnmounted(() => {
   .main-title {
     font-size: 3rem;
   }
+}
+
+.video-player-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-player-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.fullscreen-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.video-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1001;
+}
+
+.close-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--neon-mint);
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 15px;
+  border: 1px solid var(--neon-mint);
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: var(--neon-mint);
+  color: #000;
+}
+
+.dev-notice-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dev-notice-modal {
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid var(--hologram-pink);
+  padding: 40px;
+  max-width: 500px;
+  text-align: center;
+  box-shadow: 0 0 30px var(--hologram-pink);
+}
+
+.dev-notice-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.dev-notice-icon {
+  font-size: 2rem;
+  color: #ffff00;
+  animation: blink 0.5s infinite;
+}
+
+.dev-notice-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: var(--hologram-pink);
+}
+
+.dev-notice-content {
+  margin-bottom: 30px;
+}
+
+.dev-notice-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.dev-notice-subtext {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dev-notice-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: transparent;
+  color: var(--neon-mint);
+  border: 1px solid var(--neon-mint);
+  padding: 12px 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dev-notice-btn:hover {
+  background: var(--neon-mint);
+  color: #000;
+  box-shadow: 0 0 20px var(--neon-mint);
 }
 </style>

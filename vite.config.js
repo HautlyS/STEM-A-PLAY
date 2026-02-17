@@ -5,9 +5,16 @@ import path from 'path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+const getBase = () => {
+  if (process.env.GITHUB_PAGES === 'true') {
+    return '/STEM-A-PLAY/'
+  }
+  return '/'
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  base: import.meta.env?.PROD ? '/' : '/',
+  base: getBase(),
   plugins: [vue()],
   build: {
     minify: 'terser',
